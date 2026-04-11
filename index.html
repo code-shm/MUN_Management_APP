@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUN Session Manager | IIIT Naya Raipur</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <div class="background-overlay"></div>
+        
+        <main class="dashboard-grid">
+            <!-- LEFT PANEL: Sidebar / Delegate Manager -->
+            <aside class="sidebar-panel glass">
+                <header class="panel-header">
+                    <input type="text" id="sessionNameInput" class="session-title-input" value="Moderated Caucus: Topic Name" placeholder="Session Name...">
+                    <p class="panel-subtitle">MODEL UNITED NATIONS - IIIT NAYA RAIPUR</p>
+                </header>
+
+                <div class="management-section">
+                    <div class="add-speaker-container">
+                        <input type="text" id="newSpeakerInput" placeholder="Add Country..." autocomplete="off">
+                        <button id="addSpeakerBtn" class="add-btn">+</button>
+                    </div>
+
+                    <div class="speaker-list-container">
+                        <table class="speaker-table">
+                            <thead>
+                                <tr>
+                                    <th>COUNTRY</th>
+                                    <th>ELAPSED</th>
+                                    <th>LEFT</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="speakerListBody">
+                                <!-- Delegate rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <footer class="panel-footer">
+                    <button id="clearAllData" class="danger-link">Clear Session Data</button>
+                </footer>
+            </aside>
+
+            <!-- RIGHT PANEL: Main Timer & Display -->
+            <section class="timer-main">
+                <div class="active-speaker-display">
+                    <h2 id="activeCountry" class="active-country-name">SELECT DELEGATE</h2>
+                    <div class="active-timer-display" id="activeTimer">00:00</div>
+                    
+                    <div class="active-controls">
+                        <button id="mainStartStopBtn" class="btn primary">START</button>
+                        <button id="mainResetBtn" class="btn secondary">RESET</button>
+                    </div>
+
+                    <div class="presets-container">
+                        <span class="preset-label">TIMER PRESETS:</span>
+                        <div class="preset-btns">
+                            <button class="preset-btn" data-time="60">60s</button>
+                            <button class="preset-btn" data-time="90">90s</button>
+                            <button class="preset-btn" data-time="120">120s</button>
+                            <button id="customTimeBtn" class="preset-btn">SET</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Hidden Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content glass">
+            <h3>Custom Speaker Time</h3>
+            <div class="time-inputs">
+                <input type="number" id="customMinutes" placeholder="MM" min="0" max="59">
+                <span>:</span>
+                <input type="number" id="customSeconds" placeholder="SS" min="0" max="59">
+            </div>
+            <div class="modal-btns">
+                <button id="saveSettingsBtn" class="btn primary">Apply</button>
+                <button id="closeSettingsBtn" class="btn secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background beep sound if needed -->
+    <audio id="timerBeep" src="https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3"></audio>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
