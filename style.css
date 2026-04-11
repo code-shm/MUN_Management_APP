@@ -81,9 +81,13 @@ body {
     text-align: center;
     padding: 0.5rem;
     outline: none;
-    transition: all 0.3s;
+    transition: font-size 0.5s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s ease, border-color 0.3s, background 0.3s;
     text-transform: uppercase;
     letter-spacing: 0.05rem;
+    resize: none;
+    overflow-y: hidden;
+    min-height: 2em;
+    line-height: 1.4;
 }
 
 .session-title-input:focus {

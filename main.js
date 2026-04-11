@@ -259,9 +259,44 @@ newSpeakerInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") addSpeakerBtn.click();
 });
 
+function autoResizeTextarea(textarea) {
+    // Save current scroll position
+    const scrollPos = window.scrollY;
+    
+    // We used to set style.height = 'auto' here, but it causes flickering with transitions.
+    // Instead, we explicitly check the scrollHeight with the base font size first.
+    
+    const style = window.getComputedStyle(textarea);
+    const lineHeight = parseFloat(style.lineHeight);
+    const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+
+    // Temp reset font to check lines
+    textarea.style.fontSize = '1.6rem';
+    let currentHeight = textarea.scrollHeight;
+
+    if (currentHeight - padding > lineHeight * 4) {
+        textarea.style.fontSize = '1.1rem';
+    } else {
+        textarea.style.fontSize = '1.6rem';
+    }
+
+    // Now update height
+    textarea.style.height = 'auto'; // Necessary once to get true scrollHeight of content
+    textarea.style.height = textarea.scrollHeight + 'px';
+    
+    // Restore scroll
+    window.scrollTo(0, scrollPos);
+}
+
 sessionNameInput.addEventListener("input", () => {
     state.sessionName = sessionNameInput.value;
+    autoResizeTextarea(sessionNameInput);
     saveState();
+});
+
+// Initial resize on load
+window.addEventListener("load", () => {
+    autoResizeTextarea(sessionNameInput);
 });
 
 mainStartStopBtn.addEventListener("click", toggleTimer);
@@ -325,6 +360,20 @@ clearAllDataBtn.addEventListener("click", () => {
 function init() {
     loadState();
     startGlobalLoop();
+    
+    // Set max volume
+    timerBeep.volume = 1.0;
+    
+    // Modern browsers block audio until FIRST interaction.
+    // We attempt to "unlock" sound on first user click.
+    const unlockAudio = () => {
+        timerBeep.play().then(() => {
+            timerBeep.pause(); // Just a quick play/pause to unlock
+            timerBeep.currentTime = 0;
+            document.removeEventListener("click", unlockAudio);
+        }).catch(e => console.log("Audio unlock pending interaction..."));
+    };
+    document.addEventListener("click", unlockAudio);
     
     // Set active preset
     presetBtns.forEach(btn => {

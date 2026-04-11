@@ -17,7 +17,7 @@
             <!-- LEFT PANEL: Sidebar / Delegate Manager -->
             <aside class="sidebar-panel glass">
                 <header class="panel-header">
-                    <input type="text" id="sessionNameInput" class="session-title-input" value="Moderated Caucus: Topic Name" placeholder="Session Name...">
+                    <textarea id="sessionNameInput" class="session-title-input" rows="2" placeholder="Session Name / Agenda...">Moderated Caucus: Topic Name</textarea>
                     <p class="panel-subtitle">MODEL UNITED NATIONS - IIIT NAYA RAIPUR</p>
                 </header>
 
@@ -90,8 +90,8 @@
         </div>
     </div>
 
-    <!-- Background beep sound if needed -->
-    <audio id="timerBeep" src="https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3"></audio>
+    <!-- Background beep sound for timer 00:00 -->
+    <audio id="timerBeep" src="https://assets.mixkit.co/sfx/preview/mixkit-urgent-simple-beep-2266.mp3" preload="auto"></audio>
 
     <script type="module" src="/main.js"></script>
 </body>
