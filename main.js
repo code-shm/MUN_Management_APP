@@ -227,12 +227,58 @@ function startGlobalLoop() {
 
         if (changed) {
             updateActiveDisplay();
-            // We only update the list every second if something is running
-            // Optimization: Only update the specific row if possible, but full render is fine for small lists
             renderSpeakerList();
             saveState();
         }
     }, 1000);
+}
+
+function handleKeyboardShortcuts(e) {
+    // Ignore if typing in an input or textarea
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+    const key = e.key.toLowerCase();
+    const speakerCount = state.speakers.length;
+    if (speakerCount === 0) return;
+
+    let currentIndex = state.speakers.findIndex(s => s.id === state.activeSpeakerId);
+
+    // NAVIGATION: W / Up Arrow
+    if (key === "w" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const nextIndex = (currentIndex <= 0) ? speakerCount - 1 : currentIndex - 1;
+        setActiveSpeaker(state.speakers[nextIndex].id);
+    }
+    // NAVIGATION: S / Down Arrow
+    else if (key === "s" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const nextIndex = (currentIndex >= speakerCount - 1 || currentIndex === -1) ? 0 : currentIndex + 1;
+        setActiveSpeaker(state.speakers[nextIndex].id);
+    }
+    // MARK DONE: Enter
+    else if (e.key === "Enter") {
+        e.preventDefault();
+        const active = state.speakers.find(s => s.id === state.activeSpeakerId);
+        if (active) {
+            active.isDone = !active.isDone;
+            if (active.isDone) active.isRunning = false;
+            renderSpeakerList();
+            updateActiveDisplay();
+            saveState();
+        }
+    }
+    // START/STOP TIMER: Space
+    else if (e.key === " ") {
+        e.preventDefault();
+        toggleTimer();
+    }
+    // REMOVE COUNTRY: Backspace
+    else if (e.key === "Backspace") {
+        e.preventDefault();
+        if (state.activeSpeakerId) {
+            removeSpeaker(state.activeSpeakerId);
+        }
+    }
 }
 
 // --- EVENT LISTENERS ---
@@ -381,6 +427,9 @@ function init() {
             btn.classList.add("active");
         }
     });
+
+    // Register Keyboard Shortcuts
+    window.addEventListener("keydown", handleKeyboardShortcuts);
 }
 
 init();
