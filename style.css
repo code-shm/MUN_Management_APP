@@ -5,8 +5,10 @@
     --bronze: #cd7f32;
     --text-primary: #fdfaf5;
     --text-muted: rgba(253, 250, 245, 0.5);
-    --glass: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --ui-element-bg: #1a1a1a; /* Opaque background for smaller components */
+    --ui-element-border: #333;
     --glass-heavy: rgba(255, 255, 255, 0.07);
     --danger: #ff4b2b;
 }
@@ -29,7 +31,7 @@ body {
 #app {
     width: 100%;
     height: 100%;
-    background: url('/background.png') no-repeat center center/cover;
+    background: #000;
     position: relative;
     z-index: 1;
 }
@@ -40,7 +42,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%);
+    background: radial-gradient(circle at 50% 50%, rgba(40, 40, 40, 0.3) 0%, rgba(0, 0, 0, 1) 100%); /* Slightly brighter center for blur depth */
     z-index: -1;
 }
 
@@ -54,14 +56,15 @@ body {
 
 /* LEFT PANEL: Sidebar */
 .sidebar-panel {
-    background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(20px);
-    border-right: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.1); /* Increased opacity for a lighter 'frosted' look */
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border-right: 1px solid rgba(255, 255, 255, 0.15); /* Slightly more visible border */
     display: flex;
     flex-direction: column;
-    padding: 2rem;
+    padding: 2.5rem; /* Increased padding */
     overflow: hidden;
-    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+    box-shadow: 20px 0 80px rgba(0, 0, 0, 0.9), inset 1px 1px 0 rgba(255, 255, 255, 0.15); 
 }
 
 .panel-header {
@@ -117,8 +120,8 @@ body {
 
 .add-speaker-container input {
     flex: 1;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
+    background: var(--ui-element-bg);
+    border: 1px solid var(--ui-element-border);
     border-radius: 0.6rem;
     padding: 0.8rem 1.2rem;
     color: #fff;
@@ -177,7 +180,7 @@ body {
 }
 
 .speaker-row:hover {
-    background: var(--glass);
+    background: var(--ui-element-bg);
 }
 
 .speaker-row.active {
@@ -268,8 +271,16 @@ body {
 
 .active-speaker-display {
     width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
     text-align: center;
+    background: rgba(255, 255, 255, 0.08); /* More visible glass background */
+    backdrop-filter: blur(50px) saturate(200%); /* Stronger blur */
+    -webkit-backdrop-filter: blur(50px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Brighter border for visibility */
+    border-radius: 4rem;
+    padding: 6rem 4rem; /* More generous internal spacing */
+    box-shadow: 0 50px 120px rgba(0, 0, 0, 0.9), inset 1px 1px 0 rgba(255, 255, 255, 0.1);
+    margin-top: -2rem; /* Pull up slightly to center vertically in the viewport better */
 }
 
 .active-country-name {
@@ -362,8 +373,8 @@ body {
 }
 
 .preset-btn {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
+    background: var(--ui-element-bg);
+    border: 1px solid var(--ui-element-border);
     color: var(--text-primary);
     padding: 0.8rem 1.8rem;
     border-radius: 0.8rem;
@@ -411,7 +422,7 @@ body {
     border-radius: 2.5rem;
     border: 1px solid var(--gold);
     text-align: center;
-    box-shadow: 0 0 100px rgba(0,0,0,0.8);
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.8);
 }
 
 .time-inputs {
@@ -424,8 +435,8 @@ body {
 
 .time-inputs input {
     width: 100px;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
+    background: var(--ui-element-bg);
+    border: 1px solid var(--ui-element-border);
     color: #fff;
     padding: 1.5rem;
     font-size: 2.5rem;

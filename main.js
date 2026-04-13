@@ -4,6 +4,7 @@ let state = {
     speakers: [],
     activeSpeakerId: null,
     defaultTime: 60, // seconds
+    undoHistory: [], // stores last 5 deleted speakers
 };
 
 let timerInterval = null;
@@ -172,8 +173,29 @@ function setActiveSpeaker(id) {
 }
 
 function removeSpeaker(id) {
+    const speakerToRemove = state.speakers.find(s => s.id === id);
+    if (speakerToRemove) {
+        // Save to undo history (limit 5)
+        state.undoHistory.unshift({ ...speakerToRemove, isRunning: false });
+        if (state.undoHistory.length > 5) state.undoHistory.pop();
+    }
+
     state.speakers = state.speakers.filter(s => s.id !== id);
     if (state.activeSpeakerId === id) state.activeSpeakerId = null;
+    renderSpeakerList();
+    updateActiveDisplay();
+    saveState();
+}
+
+function undoRemoval() {
+    if (state.undoHistory.length === 0) return;
+    
+    const restoredSpeaker = state.undoHistory.shift();
+    state.speakers.push(restoredSpeaker);
+    
+    // Auto-select the restored speaker
+    state.activeSpeakerId = restoredSpeaker.id;
+    
     renderSpeakerList();
     updateActiveDisplay();
     saveState();
@@ -278,6 +300,11 @@ function handleKeyboardShortcuts(e) {
         if (state.activeSpeakerId) {
             removeSpeaker(state.activeSpeakerId);
         }
+    }
+    // UNDO: Ctrl + Z
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        undoRemoval();
     }
 }
 
