@@ -39,7 +39,13 @@ function saveState() {
 function loadState() {
     const saved = localStorage.getItem("mun_session_manager_v2");
     if (saved) {
-        state = JSON.parse(saved);
+        const parsedState = JSON.parse(saved);
+        // Merge with existing default state to ensure no properties like undoHistory are missing
+        state = { ...state, ...parsedState };
+        // Ensure critical properties are arrays just in case
+        if (!state.speakers) state.speakers = [];
+        if (!state.undoHistory) state.undoHistory = [];
+        
         sessionNameInput.value = state.sessionName;
     }
     renderSpeakerList();
@@ -310,6 +316,103 @@ function handleKeyboardShortcuts(e) {
 
 // --- EVENT LISTENERS ---
 
+let countriesData = [];
+const addSpeakerContainer = document.querySelector('.add-speaker-container');
+const dropdown = document.createElement('div');
+dropdown.className = 'autocomplete-dropdown';
+addSpeakerContainer.appendChild(dropdown);
+
+let activeSuggestionIndex = -1;
+
+function updateSuggestionFocus(items) {
+    items.forEach((item, index) => {
+        if (index === activeSuggestionIndex) {
+            item.classList.add('focused');
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            item.classList.remove('focused');
+        }
+    });
+}
+
+function renderSuggestions(query) {
+    dropdown.innerHTML = '';
+    if (!query) {
+        dropdown.classList.remove('active');
+        return;
+    }
+    
+    // Ignore small trailing spaces for matching
+    const lowerQuery = query.toLowerCase().trim();
+    const matches = countriesData.filter(c => c.toLowerCase().includes(lowerQuery));
+    
+    if (matches.length === 0) {
+        dropdown.classList.remove('active');
+        return;
+    }
+    
+    matches.forEach((match, index) => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        
+        // Escape regex special chars to be safe.
+        const safeQuery = lowerQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${safeQuery})`, 'gi');
+        item.innerHTML = match.replace(regex, `<span style="color: var(--gold); font-weight: 800;">$1</span>`);
+        
+        item.addEventListener('click', () => {
+            newSpeakerInput.value = match;
+            dropdown.classList.remove('active');
+            newSpeakerInput.focus();
+        });
+        dropdown.appendChild(item);
+    });
+    
+    dropdown.classList.add('active');
+    activeSuggestionIndex = -1;
+}
+
+newSpeakerInput.addEventListener('input', (e) => {
+    renderSuggestions(e.target.value);
+});
+
+newSpeakerInput.addEventListener("keydown", (e) => {
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    
+    if (e.key === "Enter") {
+        if (dropdown.classList.contains('active') && activeSuggestionIndex >= 0 && items[activeSuggestionIndex]) {
+            e.preventDefault();
+            newSpeakerInput.value = items[activeSuggestionIndex].textContent;
+            dropdown.classList.remove('active');
+        } else {
+            e.preventDefault();
+            addSpeakerBtn.click();
+        }
+    } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (dropdown.classList.contains('active') && items.length > 0) {
+            activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, items.length - 1);
+            updateSuggestionFocus(items);
+        } else if (!dropdown.classList.contains('active') && newSpeakerInput.value.trim() !== '') {
+            renderSuggestions(newSpeakerInput.value.trim());
+        }
+    } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (dropdown.classList.contains('active') && items.length > 0) {
+            activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
+            updateSuggestionFocus(items);
+        }
+    } else if (e.key === "Escape") {
+        dropdown.classList.remove('active');
+    }
+});
+
+document.addEventListener('click', (e) => {
+    if (!addSpeakerContainer.contains(e.target)) {
+        dropdown.classList.remove('active');
+    }
+});
+
 addSpeakerBtn.addEventListener("click", () => {
     const name = newSpeakerInput.value.trim();
     if (name) {
@@ -325,11 +428,8 @@ addSpeakerBtn.addEventListener("click", () => {
         newSpeakerInput.value = "";
         renderSpeakerList();
         saveState();
+        dropdown.classList.remove('active');
     }
-});
-
-newSpeakerInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") addSpeakerBtn.click();
 });
 
 function autoResizeTextarea(textarea) {
@@ -431,6 +531,13 @@ clearAllDataBtn.addEventListener("click", () => {
 
 // --- INIT ---
 function init() {
+    fetch('/countries.json')
+        .then(r => r.json())
+        .then(data => {
+            countriesData = data;
+        })
+        .catch(err => console.error("Failed loading countries:", err));
+
     loadState();
     startGlobalLoop();
     

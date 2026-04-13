@@ -116,6 +116,45 @@ body {
     display: flex;
     gap: 0.8rem;
     margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: calc(100% - 53px); /* account for button width and gap */
+    max-height: 200px;
+    background: var(--ui-element-bg);
+    border: 1px solid var(--gold);
+    border-radius: 0.6rem;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    display: none;
+    flex-direction: column;
+}
+
+.autocomplete-dropdown.active {
+    display: flex;
+}
+
+.autocomplete-item {
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--glass-border);
+    transition: background 0.2s, color 0.2s;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.focused {
+    background: rgba(212, 175, 55, 0.15);
+    color: var(--gold);
 }
 
 .add-speaker-container input {
@@ -147,11 +186,49 @@ body {
     background: #fff;
 }
 
+.autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: calc(100% - 45px - 0.8rem); /* Match input width */
+    background: var(--ui-element-bg);
+    border: 1px solid var(--ui-element-border);
+    border-radius: 0.6rem;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    display: none;
+}
+
+.autocomplete-dropdown.active {
+    display: block;
+}
+
+.autocomplete-item {
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    transition: background 0.2s;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover, .autocomplete-item.focused {
+    background: rgba(255,255,255,0.1);
+    color: var(--gold);
+}
+
 .speaker-list-container {
     flex: 1;
     overflow-y: auto;
     margin-right: -10px;
     padding-right: 10px;
+    padding-bottom: 4rem; /* Ensure last element can fully scroll into view */
 }
 
 .speaker-table {
@@ -166,12 +243,22 @@ body {
     opacity: 0.4;
     letter-spacing: 0.1rem;
     border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-dark); /* Keep header opaque to prevent overlap */
+    z-index: 10;
 }
 
 .speaker-table td {
     padding: 1rem 0.8rem;
     font-size: 0.9rem;
     border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.speaker-table td:last-child {
+    white-space: nowrap; /* Prevent action buttons from breaking down to next line */
+    text-align: right;
+    min-width: 100px;
 }
 
 .speaker-row {
