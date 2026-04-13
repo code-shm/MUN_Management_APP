@@ -126,11 +126,22 @@ function renderSpeakerList() {
     speakerListBody.innerHTML = "";
     
     state.speakers.forEach((speaker, index) => {
+        // Backfill missing flags for speakers cached from before the flag update
+        if (speaker.flag === undefined && countriesData.length > 0) {
+            const matchedCountry = countriesData.find(c => {
+                const cName = typeof c === 'string' ? c : c.name;
+                return cName.toLowerCase() === speaker.name.toLowerCase();
+            });
+            speaker.flag = (matchedCountry && typeof matchedCountry === 'object') ? matchedCountry.flag : null;
+        }
+
         const row = document.createElement("tr");
         row.className = `speaker-row ${speaker.id === state.activeSpeakerId ? 'active' : ''} ${speaker.isDone ? 'done' : ''}`;
         
+        const flagHtml = speaker.flag ? `<img src="${speaker.flag}" class="country-flag" width="24" height="16" alt="flag">` : '';
+        
         row.innerHTML = `
-            <td>${speaker.name}</td>
+            <td class="name-cell">${flagHtml}${speaker.name}</td>
             <td class="time-elapsed">${formatTime(speaker.elapsed)}</td>
             <td class="time-remaining">${formatTime(speaker.remaining)}</td>
             <td>
@@ -368,26 +379,29 @@ function renderSuggestions(query) {
         return;
     }
     
-    // Ignore small trailing spaces for matching
     const lowerQuery = query.toLowerCase().trim();
-    const matches = countriesData.filter(c => c.toLowerCase().includes(lowerQuery));
+    const matches = countriesData.filter(c => {
+        const cName = typeof c === 'string' ? c : c.name;
+        return cName.toLowerCase().includes(lowerQuery);
+    });
     
     if (matches.length === 0) {
         dropdown.classList.remove('active');
         return;
     }
     
-    matches.forEach((match, index) => {
+    matches.forEach((matchObj, index) => {
+        const matchName = typeof matchObj === 'string' ? matchObj : matchObj.name;
         const item = document.createElement('div');
         item.className = 'autocomplete-item';
         
         // Escape regex special chars to be safe.
         const safeQuery = lowerQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(`(${safeQuery})`, 'gi');
-        item.innerHTML = match.replace(regex, `<span style="color: var(--gold); font-weight: 800;">$1</span>`);
+        item.innerHTML = matchName.replace(regex, `<span style="color: var(--gold); font-weight: 800;">$1</span>`);
         
         item.addEventListener('click', () => {
-            newSpeakerInput.value = match;
+            newSpeakerInput.value = matchName;
             dropdown.classList.remove('active');
             newSpeakerInput.focus();
         });
@@ -442,9 +456,16 @@ document.addEventListener('click', (e) => {
 addSpeakerBtn.addEventListener("click", () => {
     const name = newSpeakerInput.value.trim();
     if (name) {
+        const matchedCountry = countriesData.find(c => {
+            const cName = typeof c === 'string' ? c : c.name;
+            return cName.toLowerCase() === name.toLowerCase();
+        });
+        const flagURL = (matchedCountry && typeof matchedCountry === 'object') ? matchedCountry.flag : null;
+
         const newSpeaker = {
             id: Date.now().toString(),
             name: name,
+            flag: flagURL,
             elapsed: 0,
             remaining: state.defaultTime,
             isRunning: false,
@@ -592,6 +613,8 @@ function init() {
         .then(r => r.json())
         .then(data => {
             countriesData = data;
+            // Re-render once data loads so any cached speakers missing flags get them
+            renderSpeakerList();
         })
         .catch(err => console.error("Failed loading countries:", err));
 
