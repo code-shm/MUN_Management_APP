@@ -21,7 +21,36 @@ const speakerListBody = document.getElementById("speakerListBody");
 const presetBtns = document.querySelectorAll(".preset-btn");
 const exportCsvBtn = document.getElementById("exportCsvBtn");
 const clearAllDataBtn = document.getElementById("clearAllData");
-const timerBeep = document.getElementById("timerBeep");
+
+// --- WEB AUDIO API (Robust Sound System) ---
+const WebAudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function playChime(count, freq, startVolume) {
+    if (!audioCtx) audioCtx = new WebAudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const timeBetweenBeeps = 0.35; // seconds
+    const duration = 0.6; // sustain before fadeout
+
+    for (let i = 0; i < count; i++) {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * timeBetweenBeeps);
+        
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime + i * timeBetweenBeeps);
+        gainNode.gain.linearRampToValueAtTime(startVolume, audioCtx.currentTime + i * timeBetweenBeeps + 0.05); // quick attack
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * timeBetweenBeeps + duration); // smooth trail
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.start(audioCtx.currentTime + i * timeBetweenBeeps);
+        osc.stop(audioCtx.currentTime + i * timeBetweenBeeps + duration);
+    }
+}
 
 // Modal Elements
 const settingsModal = document.getElementById("settingsModal");
@@ -70,24 +99,21 @@ function updateActiveDisplay() {
         activeTimerDisplay.textContent = formatTime(activeSpeaker.remaining);
         mainStartStopBtn.textContent = activeSpeaker.isRunning ? "PAUSE" : "START";
         
-        // Visual feedback for running
-        if (activeSpeaker.isRunning) {
-            activeTimerDisplay.style.color = "var(--gold)";
-            activeCountryDisplay.style.opacity = "1";
-        } else {
-            activeTimerDisplay.style.color = "var(--text-primary)";
-            activeCountryDisplay.style.opacity = "0.6";
-        }
-
-        // Overtime visual feedback
+        // Base opacity for country name
+        activeCountryDisplay.style.opacity = activeSpeaker.isRunning ? "1" : "0.6";
+        
+        // Color logic based on time & running state
+        activeTimerDisplay.classList.remove("overtime-pulse");
+        
         if (activeSpeaker.remaining < 0) {
             activeTimerDisplay.style.color = "var(--danger)";
             activeTimerDisplay.classList.add("overtime-pulse");
         } else if (activeSpeaker.remaining === 0) {
             activeTimerDisplay.style.color = "var(--danger)";
-            activeTimerDisplay.classList.remove("overtime-pulse");
+        } else if (activeSpeaker.remaining <= 15) {
+            activeTimerDisplay.style.color = "var(--warning)";
         } else {
-            activeTimerDisplay.classList.remove("overtime-pulse");
+            activeTimerDisplay.style.color = activeSpeaker.isRunning ? "var(--gold)" : "var(--text-primary)";
         }
     } else {
         activeCountryDisplay.textContent = "SELECT DELEGATE";
@@ -243,13 +269,12 @@ function startGlobalLoop() {
                 s.elapsed++;
                 s.remaining--;
                 
-                // Play sound exactly at 0
-                if (s.remaining === 0) {
-                    try { 
-                        timerBeep.currentTime = 0;
-                        timerBeep.play(); 
-                    } catch(e) { console.error("Audio error", e); }
+                if (s.remaining === 15) {
+                    try { playChime(1, 600, 0.5); } catch(e) { console.error("Audio error", e); }
+                } else if (s.remaining === 0) {
+                    try { playChime(2, 900, 1.0); } catch(e) { console.error("Audio error", e); }
                 }
+                
                 changed = true;
             }
         });
@@ -573,17 +598,11 @@ function init() {
     loadState();
     startGlobalLoop();
     
-    // Set max volume
-    timerBeep.volume = 1.0;
-    
-    // Modern browsers block audio until FIRST interaction.
-    // We attempt to "unlock" sound on first user click.
+    // Attempt to unlock Web Audio on first user interaction so it's ready.
     const unlockAudio = () => {
-        timerBeep.play().then(() => {
-            timerBeep.pause(); // Just a quick play/pause to unlock
-            timerBeep.currentTime = 0;
-            document.removeEventListener("click", unlockAudio);
-        }).catch(e => console.log("Audio unlock pending interaction..."));
+        if (!audioCtx) audioCtx = new WebAudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        document.removeEventListener("click", unlockAudio);
     };
     document.addEventListener("click", unlockAudio);
     
