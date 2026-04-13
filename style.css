@@ -559,3 +559,17 @@ body {
 }
 
 .time-inputs span { font-size: 2rem; font-weight: 800; color: var(--gold); }
+
+/* Copyright Footer */
+.copyright-footer {
+    position: fixed;
+    bottom: 0.5rem;
+    right: 2rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.15rem;
+    pointer-events: none;
+    z-index: 100;
+    font-weight: 300;
+    text-transform: uppercase;
+}
