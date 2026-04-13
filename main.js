@@ -95,7 +95,11 @@ function updateActiveDisplay() {
     const activeSpeaker = state.speakers.find(s => s.id === state.activeSpeakerId);
     
     if (activeSpeaker) {
-        activeCountryDisplay.textContent = activeSpeaker.name.toUpperCase();
+        if (activeSpeaker.flag) {
+            activeCountryDisplay.innerHTML = `<img src="${activeSpeaker.flag}" class="active-flag-large" alt="${activeSpeaker.name}">`;
+        } else {
+            activeCountryDisplay.textContent = activeSpeaker.name.toUpperCase();
+        }
         activeTimerDisplay.textContent = formatTime(activeSpeaker.remaining);
         mainStartStopBtn.textContent = activeSpeaker.isRunning ? "PAUSE" : "START";
         

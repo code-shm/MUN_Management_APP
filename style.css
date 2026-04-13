@@ -391,6 +391,18 @@ body {
     color: var(--gold);
     margin-bottom: 1.5rem;
     text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80px; /* To prevent jumping when swapping text to img */
+}
+
+.active-flag-large {
+    height: 80px;
+    width: auto;
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    object-fit: cover;
 }
 
 .active-timer-display {
