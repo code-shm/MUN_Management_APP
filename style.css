@@ -70,6 +70,7 @@ body {
 .panel-header {
     margin-bottom: 2.5rem;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .session-title-input {
@@ -110,6 +111,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 0; /* Ensures it shrinks to fit parent */
 }
 
 .add-speaker-container {
@@ -335,6 +337,8 @@ body {
     padding-top: 1.5rem;
     border-top: 1px solid var(--glass-border);
     text-align: center;
+    flex-shrink: 0; /* Prevents footer from collapsing out of view */
+    margin-top: auto;
 }
 
 .danger-link {

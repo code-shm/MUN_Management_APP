@@ -19,6 +19,7 @@ const newSpeakerInput = document.getElementById("newSpeakerInput");
 const addSpeakerBtn = document.getElementById("addSpeakerBtn");
 const speakerListBody = document.getElementById("speakerListBody");
 const presetBtns = document.querySelectorAll(".preset-btn");
+const exportCsvBtn = document.getElementById("exportCsvBtn");
 const clearAllDataBtn = document.getElementById("clearAllData");
 const timerBeep = document.getElementById("timerBeep");
 
@@ -518,6 +519,37 @@ saveSettingsBtn.addEventListener("click", () => {
 });
 
 closeSettingsBtn.addEventListener("click", () => settingsModal.classList.add("hidden"));
+
+exportCsvBtn.addEventListener("click", () => {
+    if (state.speakers.length === 0) {
+        alert("No data to export!");
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Country,Elapsed Time,Time Left,Status\n";
+
+    state.speakers.forEach(speaker => {
+        const name = `"${speaker.name.replace(/"/g, '""')}"`;
+        const elapsed = formatTime(speaker.elapsed);
+        const left = formatTime(speaker.remaining);
+        const status = speaker.isDone ? "Done" : (speaker.isRunning ? "Speaking" : "Waiting");
+        
+        csvContent += `${name},${elapsed},${left},${status}\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    
+    const safeSessionName = state.sessionName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'session';
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute("download", `mun_report_${safeSessionName}_${dateStr}.csv`);
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
 
 clearAllDataBtn.addEventListener("click", () => {
     if (confirm("Clear all session data?")) {
